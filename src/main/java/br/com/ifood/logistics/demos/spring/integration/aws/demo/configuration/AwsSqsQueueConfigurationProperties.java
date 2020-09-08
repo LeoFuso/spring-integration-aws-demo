@@ -34,6 +34,9 @@ public class AwsSqsQueueConfigurationProperties {
     public void setConsumers(final Map<String, Consumer> consumers) {
         this.consumers = Optional.ofNullable(consumers)
                                  .orElseGet(Map::of);
+
+        this.consumers
+                .forEach((beanName, consumer) -> consumer.setName(beanName));
     }
 
     public Map<String, Consumer> getConsumers() {
@@ -107,6 +110,8 @@ public class AwsSqsQueueConfigurationProperties {
 
     static class TaskExecutor {
 
+        private String name;
+
         /**
          * The minimum number of threads to keep alive without timing out.
          */
@@ -118,6 +123,14 @@ public class AwsSqsQueueConfigurationProperties {
          */
         @Positive
         private Integer maxPoolSize = Integer.MAX_VALUE;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name + "AsyncTaskExecutor";
+        }
 
         public Integer getCorePoolSize() {
             return corePoolSize;
@@ -131,13 +144,15 @@ public class AwsSqsQueueConfigurationProperties {
             return maxPoolSize;
         }
 
-        public void setMaxPoolSize(final int maxPoolSize) {
+        public void setMaxPoolSize(final Integer maxPoolSize) {
             this.maxPoolSize = maxPoolSize;
         }
     }
 
 
     static class Consumer {
+
+        private String name;
 
         @Valid
         @NotEmpty
@@ -183,6 +198,23 @@ public class AwsSqsQueueConfigurationProperties {
          * Configures if this container should be automatically started. The default value is true.
          */
         private Boolean autoStartup = Boolean.TRUE;
+
+        private void setName(final String name) {
+            this.name = Objects.requireNonNull(name);
+            this.executor.setName(name);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getChannelName() {
+            return this.name + "Channel";
+        }
+
+        public String getChannelAdapterName() {
+            return this.name + "ChannelAdapter";
+        }
 
         public List<Queue> getQueues() {
             return new ArrayList<>(queues);
