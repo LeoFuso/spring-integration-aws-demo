@@ -7,6 +7,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.integration.aws.inbound.SqsMessageDrivenChannelAdapter;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageProducer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 
@@ -36,6 +37,11 @@ public class InboundQueueConfiguration {
         channelAdapter.setOutputChannel(inboundQueueChannel());
         channelAdapter.setMessageDeletionPolicy(SqsMessageDeletionPolicy.ON_SUCCESS);
         channelAdapter.setMaxNumberOfMessages(2);
+
+        final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(2);
+        threadPoolTaskExecutor.setThreadNamePrefix("SIMPLE_PRODUCER-");
         final SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor("INBOUND-QUEUE-");
         taskExecutor.setConcurrencyLimit(2);
 
