@@ -50,12 +50,10 @@ public final class AwsSqsQueueAutoConfigurationUtils {
         final DirectChannel channel = registry.getBean(channelName, DirectChannel.class);
         builder.addPropertyValue("outputChannel", channel);
 
-        /*
         final String taskExecutorName = consumer.getExecutor()
                                                 .getName();
         final ThreadPoolTaskExecutor taskExecutor = registry.getBean(taskExecutorName, ThreadPoolTaskExecutor.class);
         builder.addPropertyValue("taskExecutor", taskExecutor);
-        */
 
         final String beanName = consumer.getChannelAdapterName();
         final BeanDefinition channelAdapterBeanDefinition = builder.getBeanDefinition();
