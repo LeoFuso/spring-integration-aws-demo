@@ -115,8 +115,8 @@ public class AwsSqsQueueConfigurationProperties {
         /**
          * The minimum number of threads to keep alive without timing out.
          */
-        @Positive
-        private Integer corePoolSize = 1;
+        @Min(2)
+        private Integer corePoolSize = 2;
 
         /**
          * The maximum number of threads that can ever be created.
