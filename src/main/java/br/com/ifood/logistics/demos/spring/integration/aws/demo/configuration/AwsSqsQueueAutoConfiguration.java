@@ -4,6 +4,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
 
+import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.AwsSqsQueueConfigurationProperties;
+
 import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationUtils.registerAsyncTaskExecutor;
 import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationUtils.registerChannel;
 import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationUtils.registerChannelAdapter;

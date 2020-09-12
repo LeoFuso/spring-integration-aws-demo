@@ -1,10 +1,9 @@
-package br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration;
+package br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Positive;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -24,6 +23,9 @@ import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy
 import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
 
+import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.queue.Queue;
+import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.TaskExecutor;
+
 @Validated
 @ConfigurationProperties("integration.aws.sqs.configuration")
 public class AwsSqsQueueConfigurationProperties {
@@ -35,131 +37,42 @@ public class AwsSqsQueueConfigurationProperties {
         this.consumers = Optional.ofNullable(consumers)
                                  .orElseGet(Map::of);
 
-        this.consumers
-                .forEach((beanName, consumer) -> consumer.setName(beanName));
+        this.consumers.forEach((beanName, consumer) -> consumer.setBeanNamePrefix(beanName));
     }
 
     public Map<String, Consumer> getConsumers() {
         return consumers;
     }
 
-    static class Queue {
+    @Validated
+    public static class Consumer {
 
         /**
-         * Configure the queue name
+         * <p>Serves as an reference for all the named beans dependencies.</p>
+         * <p>Its default value its the key referencing this {@link Consumer} in the {@link
+         * AwsSqsQueueConfigurationProperties#consumers} map</p>
          */
-        @NotEmpty
-        private String name;
+        private String beanNamePrefix;
 
         /**
-         * If present, configure a dead letter queue associated with this {@link Queue}
+         * <p>The channel in which the messages of this consumer will be redirected to.</p>
+         * <p>If empty, the channel name will be "{@link Consumer#beanNamePrefix} + Channel"</p>
          */
-        private String deadLetterQueue;
+        private String channelName;
 
         /**
-         * Configure the max number of times a message can be reprocessed before sent to the {@link
-         * Queue#deadLetterQueue}
+         * <p>The channel in which the messages that, for some reason, failed to be successfully processed will be
+         * redirected to.</p>
+         * <p>If empty, no channel will be created.</p>
          */
-        @Max(10)
-        @Positive
-        private Integer maxNumberOfSameMessageReceive = 5;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
-
-        public String getDeadLetterQueue() {
-            return deadLetterQueue;
-        }
-
-        public void setDeadLetterQueue(final String deadLetterQueue) {
-            this.deadLetterQueue = deadLetterQueue;
-        }
-
-        public Integer getMaxNumberOfSameMessageReceive() {
-            return maxNumberOfSameMessageReceive;
-        }
-
-        public void setMaxNumberOfSameMessageReceive(final Integer maxNumberOfSameMessageReceive) {
-            this.maxNumberOfSameMessageReceive = maxNumberOfSameMessageReceive;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (!(o instanceof Queue)) {
-                return false;
-            }
-            final Queue queue = (Queue) o;
-            return getName().equals(queue.getName()) &&
-                    Objects.equals(getDeadLetterQueue(), queue.getDeadLetterQueue());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getName(), getDeadLetterQueue());
-        }
-    }
-
-
-    static class TaskExecutor {
-
-        private String name;
-
-        /**
-         * The minimum number of threads to keep alive without timing out.
-         */
-        @Positive
-        private Integer corePoolSize = 2;
-
-        /**
-         * The maximum number of threads that can ever be created.
-         */
-        @Positive
-        private Integer maxPoolSize = Integer.MAX_VALUE;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name + "AsyncTaskExecutor";
-        }
-
-        public Integer getCorePoolSize() {
-            return corePoolSize;
-        }
-
-        public void setCorePoolSize(final Integer corePoolSize) {
-            this.corePoolSize = corePoolSize;
-        }
-
-        public Integer getMaxPoolSize() {
-            return maxPoolSize;
-        }
-
-        public void setMaxPoolSize(final Integer maxPoolSize) {
-            this.maxPoolSize = maxPoolSize;
-        }
-    }
-
-
-    static class Consumer {
-
-        private String name;
+        private String errorChannelName;
 
         @Valid
         @NotEmpty
         private Set<Queue> queues;
 
         @NonNull
-        private SqsMessageDeletionPolicy deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS;
+        private SqsMessageDeletionPolicy deletionPolicy = SqsMessageDeletionPolicy.NO_REDRIVE;
 
         @Valid
         private TaskExecutor executor = new TaskExecutor();
@@ -199,21 +112,34 @@ public class AwsSqsQueueConfigurationProperties {
          */
         private Boolean autoStartup = Boolean.TRUE;
 
-        private void setName(final String name) {
-            this.name = Objects.requireNonNull(name);
-            this.executor.setName(name);
+        public String getBeanNamePrefix() {
+            return beanNamePrefix;
         }
 
-        public String getName() {
-            return name;
+        public void setBeanNamePrefix(final String beanNamePrefix) {
+            this.beanNamePrefix = Objects.requireNonNull(beanNamePrefix);
+            this.executor.setBeanName(beanNamePrefix);
+            this.setChannelName(this.beanNamePrefix + "Channel");
         }
 
         public String getChannelName() {
-            return this.name + "Channel";
+            return channelName;
+        }
+
+        public void setChannelName(final String channelName) {
+            this.channelName = channelName;
+        }
+
+        public String getErrorChannelName() {
+            return errorChannelName;
+        }
+
+        public void setErrorChannelName(final String errorChannelName) {
+            this.errorChannelName = errorChannelName;
         }
 
         public String getChannelAdapterName() {
-            return this.name + "ChannelAdapter";
+            return this.beanNamePrefix + "ChannelAdapter";
         }
 
         public List<Queue> getQueues() {
@@ -272,5 +198,4 @@ public class AwsSqsQueueConfigurationProperties {
             this.autoStartup = autoStartup;
         }
     }
-
 }
