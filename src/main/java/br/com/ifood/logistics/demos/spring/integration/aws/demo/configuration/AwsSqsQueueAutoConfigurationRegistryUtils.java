@@ -11,11 +11,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 
+import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.consumer.Consumer;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.Pool;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.Shutdown;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.TaskExecutor;
-
-import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.AwsSqsQueueConfigurationProperties.Consumer;
 
 public final class AwsSqsQueueAutoConfigurationRegistryUtils {
 
