@@ -16,12 +16,10 @@ import org.springframework.boot.convert.DurationUnit;
 import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.validation.annotation.Validated;
 
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.AwsSqsQueueConfigurationProperties;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.TaskExecutor;
 
-@Validated
 public class Consumer {
 
     /**
