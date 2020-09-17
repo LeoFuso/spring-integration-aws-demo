@@ -4,35 +4,29 @@ import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.integration.aws.inbound.SqsMessageDrivenChannelAdapter;
-import org.springframework.integration.channel.DirectChannel;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 
-import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.queue.Queue;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.Pool;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.Shutdown;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.TaskExecutor;
 
 import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.AwsSqsQueueConfigurationProperties.Consumer;
 
-public final class AwsSqsQueueAutoConfigurationUtils {
+public final class AwsSqsQueueAutoConfigurationRegistryUtils {
 
-    private AwsSqsQueueAutoConfigurationUtils() {
+    private AwsSqsQueueAutoConfigurationRegistryUtils() {
         throw new UnsupportedOperationException("Trying to instantiate utility class");
     }
 
     static void registerChannelAdapter(final Consumer consumer, final GenericApplicationContext registry) {
 
         final String[] queues = consumer.getQueues()
-                                        .stream()
-                                        .map(Queue::getName)
-                                        .toArray(String[]::new);
+                                        .toArray(new String[0]);
 
         final BeanDefinitionBuilder builder = BeanDefinitionBuilder
                 .genericBeanDefinition(SqsMessageDrivenChannelAdapter.class);
@@ -51,17 +45,10 @@ public final class AwsSqsQueueAutoConfigurationUtils {
         builder.addPropertyValue("waitTimeOut", waitTimeout.toSeconds());
 
         final String channelName = consumer.getChannelName();
-        final DirectChannel channel = registry.getBean(channelName, DirectChannel.class);
-        builder.addPropertyValue("outputChannel", channel);
+        builder.addPropertyValue("outputChannelName", channelName);
 
         Optional.ofNullable(consumer.getErrorChannelName())
-                .ifPresent(errorChannelName -> {
-
-                    registerChannel(errorChannelName, registry);
-                    final DirectChannel errorChannel = registry.getBean(errorChannelName, DirectChannel.class);
-                    builder.addPropertyValue("errorChannel", errorChannel);
-
-                });
+                .ifPresent(errorChannelName -> builder.addPropertyValue("errorChannelName", errorChannelName));
 
         final String taskExecutorName = consumer.getExecutor()
                                                 .getBeanName();
@@ -72,19 +59,6 @@ public final class AwsSqsQueueAutoConfigurationUtils {
         final String beanName = consumer.getChannelAdapterName();
         final BeanDefinition channelAdapterBeanDefinition = builder.getBeanDefinition();
         registry.registerBeanDefinition(beanName, channelAdapterBeanDefinition);
-    }
-
-    static void registerChannel(final Consumer consumer, final BeanDefinitionRegistry registry) {
-        final String beanName = consumer.getChannelName();
-        final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(DirectChannel.class);
-        final AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
-        registry.registerBeanDefinition(beanName, beanDefinition);
-    }
-
-    static void registerChannel(final String channelName, final BeanDefinitionRegistry registry) {
-        final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(DirectChannel.class);
-        final AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
-        registry.registerBeanDefinition(channelName, beanDefinition);
     }
 
     static void registerAsyncTaskExecutor(final Consumer consumer, final GenericApplicationContext registry) {

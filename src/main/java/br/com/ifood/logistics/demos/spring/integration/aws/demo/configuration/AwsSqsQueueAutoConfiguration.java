@@ -6,9 +6,8 @@ import org.springframework.context.support.GenericApplicationContext;
 
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.AwsSqsQueueConfigurationProperties;
 
-import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationUtils.registerAsyncTaskExecutor;
-import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationUtils.registerChannel;
-import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationUtils.registerChannelAdapter;
+import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationRegistryUtils.registerAsyncTaskExecutor;
+import static br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.AwsSqsQueueAutoConfigurationRegistryUtils.registerChannelAdapter;
 
 @Configuration
 @EnableConfigurationProperties(AwsSqsQueueConfigurationProperties.class)
@@ -25,9 +24,8 @@ public class AwsSqsQueueAutoConfiguration {
 
     private void registerBeanDefinitions(final GenericApplicationContext registry) {
         properties.getConsumers()
-                  .forEach((beanName, consumer) -> {
+                  .forEach((ignored, consumer) -> {
 
-                      registerChannel(consumer, registry);
                       registerAsyncTaskExecutor(consumer, registry);
                       registerChannelAdapter(consumer, registry);
 

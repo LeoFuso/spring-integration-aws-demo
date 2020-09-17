@@ -7,9 +7,6 @@ import javax.validation.constraints.NotEmpty;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,9 +18,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DurationUnit;
 import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
 import org.springframework.lang.NonNull;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 
-import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.queue.Queue;
 import br.com.ifood.logistics.demos.spring.integration.aws.demo.configuration.properties.task.TaskExecutor;
 
 @Validated
@@ -67,13 +64,18 @@ public class AwsSqsQueueConfigurationProperties {
          */
         private String errorChannelName;
 
-        @Valid
+        /**
+         * Configures all the queues that are attached to this {@link Consumer}
+         */
         @NotEmpty
-        private Set<Queue> queues;
+        private Set<String> queues;
 
         @NonNull
         private SqsMessageDeletionPolicy deletionPolicy = SqsMessageDeletionPolicy.NO_REDRIVE;
 
+        /**
+         * Configures a {@link ThreadPoolTaskExecutor} to handle the messages, if empty, a default one will be provided.
+         */
         @Valid
         private TaskExecutor executor = new TaskExecutor();
 
@@ -142,12 +144,12 @@ public class AwsSqsQueueConfigurationProperties {
             return this.beanNamePrefix + "ChannelAdapter";
         }
 
-        public List<Queue> getQueues() {
-            return new ArrayList<>(queues);
+        public Set<String> getQueues() {
+            return queues;
         }
 
-        public void setQueues(final List<Queue> queues) {
-            this.queues = new HashSet<>(queues);
+        public void setQueues(final Set<String> queues) {
+            this.queues = queues;
         }
 
         public SqsMessageDeletionPolicy getDeletionPolicy() {
