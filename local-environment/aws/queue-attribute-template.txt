@@ -1,0 +1,8 @@
+{
+  "DelaySeconds": "10",
+  "MaximumMessageSize": "131072",
+  "MessageRetentionPeriod": "259200",
+  "ReceiveMessageWaitTimeSeconds": "20",
+  "RedrivePolicy": "{\"deadLetterTargetArn\":\"${arn}\",\"maxReceiveCount\":\"5\"}",
+  "VisibilityTimeout": "60"
+}

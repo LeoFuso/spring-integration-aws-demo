@@ -44,6 +44,7 @@ public class SQSComponent {
         ReflectionUtils.rethrowException(payload);
     }
 
+/*
     @SuppressWarnings("UnresolvedMessageChannel")
     @ServiceActivator(inputChannel = "genericQueueChannel")
     public void handleGenericQueueChannel(final Message<String> message) {
@@ -59,5 +60,7 @@ public class SQSComponent {
     public void handleGenericQueueDLQChannel(final Message<String> message) {
         LOGGER.info("genericDLQ -> {}", message);
     }
+
+    */
 
 }
